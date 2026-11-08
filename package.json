@@ -1,0 +1,17 @@
+{
+  "name": "signal",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Signal: a synthesizer to learn by patching, and a music master class.",
+  "scripts": {
+    "dev": "vite",
+    "build:site": "vite build",
+    "preview": "vite preview",
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "vite": "^6.4.5"
+  }
+}
