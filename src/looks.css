@@ -1,0 +1,604 @@
+/* Signal's look (2026-11-08): plates. An instrument with mass in the writing app's world: paper and ink, depth as
+   the one idea, one colour (the rubric) only where something is live, the app's type at 15, 13 and 12. A body of
+   its own; nothing here is the page's chrome. Randall chose it from three looks drawn on the same floor (cards,
+   plates, ink; the study is in the thread). These rules sit over signal.css, whose base is the older look, and
+   win by specificity and order. The paper beneath it is chosen in the Paper menu (prefs: paper). */
+
+/* ---- Papers: what the instrument lies on. Each sets the tokens signal.css reads. signal.js always sets one on the
+   dialog: the chosen paper, or the system's (stone when it is light, slate when it is dark). ---- */
+dialog.signal[data-paper="cream"],
+dialog.signal[data-paper="white"],
+dialog.signal[data-paper="stone"] {
+  --sg-ink: #16181b;
+  --sg-quiet: #65686e;
+  --sg-dim: rgba(22, 24, 27, 0.3);
+  --sg-line: rgba(22, 24, 27, 0.12);
+  --sg-wash: rgba(22, 24, 27, 0.055);
+  --sg-dot: rgba(22, 24, 27, 0.11);
+  --sg-audio: #16181b;
+  --sg-mod: #2a6ee0;
+  --sg-pitch: #b97a0c;
+  --sg-gate: #1d8f58;
+  --sg-black: #16181b;
+  --sg-black-ink: #c9c9ce;
+  --sg-rec: #a4442c;
+  --sg-rubric: #a4442c;
+  --sg-t1: #b9553b;
+  --sg-t2: #6556bd;
+  --sg-t3: #8f7134;
+  --sg-t4: #257f74;
+  --sg-tone-ink: #ffffff;
+  color-scheme: light;
+}
+dialog.signal[data-paper="cream"] {
+  --sg-bg: #f1f0ec;
+  --sg-board: #f1f0ec;
+  --sg-panel: #fbfaf7;
+  --sg-on-ink: #fbfaf7;
+  --sg-white: #fbfaf7;
+}
+dialog.signal[data-paper="white"] {
+  --sg-bg: #f8f7f4;
+  --sg-board: #f8f7f4;
+  --sg-panel: #ffffff;
+  --sg-on-ink: #ffffff;
+  --sg-white: #ffffff;
+}
+dialog.signal[data-paper="stone"] {
+  --sg-bg: #dedbd4;
+  --sg-board: #dedbd4;
+  --sg-panel: #f1efe9;
+  --sg-on-ink: #f1efe9;
+  --sg-white: #f1efe9;
+  --sg-line: rgba(22, 24, 27, 0.14);
+  --sg-dot: rgba(22, 24, 27, 0.14);
+}
+dialog.signal[data-paper="slate"],
+dialog.signal[data-paper="black"] {
+  --sg-ink: #e4e2dd;
+  --sg-quiet: #9a9892;
+  --sg-dim: rgba(228, 226, 221, 0.34);
+  --sg-line: rgba(255, 255, 255, 0.1);
+  --sg-wash: rgba(255, 255, 255, 0.07);
+  --sg-dot: rgba(255, 255, 255, 0.085);
+  --sg-audio: #e4e2dd;
+  --sg-mod: #6ea8ff;
+  --sg-pitch: #f0b44c;
+  --sg-gate: #4fcf8e;
+  --sg-black: #050506;
+  --sg-black-ink: #9a9892;
+  --sg-rec: #d4886e;
+  --sg-rubric: #d4886e;
+  --sg-t1: #e5866c;
+  --sg-t2: #a99ce6;
+  --sg-t3: #d9c287;
+  --sg-t4: #6dc6ba;
+  --sg-tone-ink: #121215;
+  color-scheme: dark;
+}
+dialog.signal[data-paper="slate"] {
+  --sg-bg: #0e0f11;
+  --sg-board: #0e0f11;
+  --sg-panel: #1f2023;
+  --sg-on-ink: #0e0f11;
+  --sg-white: #2a2b2e;
+}
+dialog.signal[data-paper="black"] {
+  --sg-bg: #050506;
+  --sg-board: #050506;
+  --sg-panel: #141517;
+  --sg-on-ink: #050506;
+  --sg-white: #1f2023;
+}
+
+/* ---- The world: the rubric where something is live, three type sizes, words instead of pills. ---- */
+dialog.signal {
+  --sg-rubric: #a4442c;
+  --sg-grid: color-mix(in srgb, var(--sg-ink) 7%, transparent);
+  --sg-rim: color-mix(in srgb, var(--sg-ink) 18%, transparent);
+  --sg-rim-strong: color-mix(in srgb, var(--sg-ink) 70%, transparent);
+  --sg-shine: rgba(255, 255, 255, 0.7);
+  --sg-shade: rgba(20, 22, 26, 0.18);
+  --sg-lift: 0 1px 2px rgba(20, 22, 26, 0.06), 0 8px 18px -6px rgba(20, 22, 26, 0.14), 0 22px 44px -14px rgba(20, 22, 26, 0.16);
+  --sg-lift-high: 0 2px 4px rgba(20, 22, 26, 0.08), 0 16px 32px -8px rgba(20, 22, 26, 0.22), 0 40px 72px -20px rgba(20, 22, 26, 0.26);
+  /* The windows (scopes, the keys' readout) are black, with a light trace. */
+  --sg-view-ink: var(--sg-panel);
+  --sg-view-line: rgba(255, 255, 255, 0.16);
+  --sg-view-dim: rgba(255, 255, 255, 0.55);
+  --sg-view-wash: rgba(255, 255, 255, 0.14);
+  --sg-edge: color-mix(in srgb, var(--sg-ink) 26%, transparent);
+  /* A note is a slip of paper on the machine, not a plate. */
+  --sg-note: #fcf9f1;
+  --sg-note-ink: #16181b;
+  /* One face, the writing app's. */
+  font-family: var(--sans, "Helvetica Neue", Helvetica, Arial, sans-serif);
+}
+dialog.signal[data-theme="dark"] {
+  --sg-rubric: #d4886e;
+  --sg-view-ink: var(--sg-ink);
+  --sg-edge: rgba(0, 0, 0, 0.6);
+  --sg-note: var(--sg-white);
+  --sg-note-ink: var(--sg-ink);
+  --sg-shine: rgba(255, 255, 255, 0.1);
+  --sg-shade: rgba(0, 0, 0, 0.5);
+  --sg-lift: 0 0 0 1px var(--sg-line), 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 22px -6px rgba(0, 0, 0, 0.4), 0 28px 56px -14px rgba(0, 0, 0, 0.5);
+  --sg-lift-high: 0 0 0 1px var(--sg-dim), 0 2px 4px rgba(0, 0, 0, 0.35), 0 18px 36px -8px rgba(0, 0, 0, 0.55), 0 48px 80px -20px rgba(0, 0, 0, 0.6);
+}
+/* The sizes are 15, 13 and 12. */
+.signal .sg-mod-name {
+  font-size: 15px;
+}
+.signal .sg-ports,
+.signal .sg-gtext,
+.signal .sg-nb,
+.signal .sg-session .sg-p,
+.signal .sg-session .sg-sline {
+  font-size: 13px;
+}
+.signal .sg-knob-label,
+.signal .sg-knob-value,
+.signal .sg-state,
+.signal .sg-gby,
+.signal .sg-menu-h,
+.signal .sg-steps li::before,
+.signal .sg-nbrow {
+  font-size: 12px;
+}
+/* The producer's one question is set like a module's name: the thing to read in its column. */
+.signal .sg-question {
+  font-size: 15px;
+  color: var(--sg-ink);
+}
+.signal .sg-did-steps li,
+.signal .sg-hand-say {
+  font-size: 13px;
+}
+.signal .sg-card {
+  border: 0;
+  box-shadow: inset 0 0 0 1px var(--sg-rim), 0 2px 0 var(--sg-edge);
+}
+.signal .sg-msg.is-you .sg-msg-text {
+  box-shadow: inset 0 0 0 1px var(--sg-rim);
+}
+.signal .sg-card .sg-msg-acts button {
+  background: var(--sg-bg);
+}
+.signal .sg-msg-acts button,
+.signal .sg-asks > button {
+  border: 0;
+  background: var(--sg-panel);
+  box-shadow:
+    inset 0 0 0 1px var(--sg-rim),
+    0 2px 0 var(--sg-edge);
+}
+.signal .sg-msg-acts button:hover:not([disabled]),
+.signal .sg-asks > button:hover:not([disabled]) {
+  background: var(--sg-panel);
+  box-shadow:
+    inset 0 0 0 1px var(--sg-ink),
+    0 2px 0 var(--sg-edge);
+}
+.signal .sg-msg-acts button:active:not([disabled]),
+.signal .sg-asks > button:active:not([disabled]) {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 0 0 1px var(--sg-rim),
+    0 1px 0 var(--sg-edge);
+}
+.signal .sg-hand-say {
+  border-radius: 6px;
+  box-shadow:
+    inset 0 0 0 1px var(--sg-rim),
+    0 2px 0 var(--sg-edge),
+    0 10px 20px -10px var(--sg-shade);
+}
+/* The live colour: a key held, the step playing, a jack a cable can land on, recording, focus. */
+.signal .sg-key.is-down,
+.signal .sg-key.is-down small {
+  background: var(--sg-rubric);
+  color: #fff;
+}
+.signal .sg-key.is-down small {
+  background: none;
+}
+.signal .sg-now {
+  background: var(--sg-rubric);
+  opacity: 0.3;
+}
+.signal .sg-jack {
+  color: var(--sg-audio);
+}
+.signal .sg-jack[data-kind="mod"] {
+  color: var(--sg-mod);
+}
+.signal .sg-jack[data-kind="pitch"] {
+  color: var(--sg-pitch);
+}
+.signal .sg-jack[data-kind="gate"] {
+  color: var(--sg-gate);
+}
+.signal .sg-jack.is-target {
+  border-color: var(--sg-rubric);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--sg-rubric) 28%, transparent);
+}
+.signal .sg-jack.is-over,
+.signal .sg-jack.is-armed {
+  background: var(--sg-rubric);
+  border-color: var(--sg-rubric);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--sg-rubric) 32%, transparent);
+}
+.signal .sg-tbtn[data-act="rec"][aria-pressed="true"],
+.signal .sg-acts button[data-mode="recording"],
+.signal .sg-acts button[data-mode="overdub"] {
+  border-color: var(--sg-rubric);
+  color: var(--sg-rubric);
+}
+.signal .sg-tbtn[data-act="rec"][aria-pressed="true"] {
+  background: var(--sg-rubric);
+  color: #fff;
+}
+.signal :focus-visible {
+  outline-color: var(--sg-rubric);
+}
+/* Words, not pills: the side's three tabs and the bars. */
+.signal .sg-seg {
+  gap: 16px;
+  padding: 0;
+  margin-bottom: 14px;
+  border-radius: 0;
+  background: none;
+}
+.signal .sg-seg button {
+  flex: none;
+  height: 30px;
+  padding: 0;
+  border-radius: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--sg-quiet);
+}
+.signal .sg-seg button[aria-selected="true"] {
+  background: none;
+  box-shadow: none;
+  color: var(--sg-ink);
+  font-weight: 600;
+}
+.signal .sg-bars {
+  gap: 10px;
+  padding: 0 4px;
+  background: none;
+}
+.signal .sg-bars button {
+  min-width: 0;
+  color: var(--sg-quiet);
+}
+.signal .sg-bars button[aria-checked="true"] {
+  background: none;
+  box-shadow: none;
+  color: var(--sg-ink);
+  font-weight: 600;
+}
+.signal .sg-bars span {
+  padding: 0;
+}
+
+/* ---- The plates: a grey body, flat plates with a rim and an edge, black knobs with a paper pointer, dark windows
+   with a light trace, keys that press. The spirit of a well-made desk machine, in the page's materials. ---- */
+.signal .sg-stage {
+  background-image: linear-gradient(var(--sg-grid) 1px, transparent 1px), linear-gradient(90deg, var(--sg-grid) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+.signal .sg-mod {
+  padding: 0 12px 12px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px var(--sg-rim), 0 2px 0 var(--sg-edge), 0 10px 20px -10px var(--sg-shade);
+}
+.signal .sg-mod.is-moving {
+  box-shadow: inset 0 0 0 1px var(--sg-rim), 0 6px 0 var(--sg-edge), 0 24px 40px -12px var(--sg-shade);
+}
+.signal .sg-mod.is-new {
+  box-shadow: inset 0 0 0 1px var(--sg-rim), 0 0 0 1.5px var(--sg-ink), 0 2px 0 var(--sg-edge), 0 10px 20px -10px var(--sg-shade);
+}
+.signal .sg-mod-head {
+  height: 38px;
+}
+.signal .sg-view {
+  border-radius: 4px;
+  background: var(--sg-black);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+.signal .sg-notes {
+  height: 46px;
+  border-radius: 4px;
+  background: var(--sg-black);
+  color: var(--sg-black-ink);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+.signal .sg-notes.is-on {
+  color: var(--sg-panel);
+}
+.signal .sg-choice {
+  gap: 4px;
+  padding: 0;
+  background: none;
+}
+.signal .sg-choice button {
+  height: 28px;
+  border-radius: 5px;
+  background: var(--sg-panel);
+  color: var(--sg-ink);
+  box-shadow: inset 0 0 0 1px var(--sg-rim), 0 2px 0 var(--sg-edge);
+}
+.signal .sg-choice button[aria-checked="true"] {
+  background: var(--sg-black);
+  color: var(--sg-panel);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5), 0 1px 0 var(--sg-edge);
+}
+.signal .sg-jack {
+  top: 3px;
+  width: 18px;
+  height: 18px;
+  border-width: 2px;
+  background: radial-gradient(circle, var(--sg-black) 0 4px, var(--sg-panel) 4.5px);
+  box-shadow: 0 1px 0 var(--sg-edge);
+}
+.signal .sg-port[data-dir="in"] .sg-jack {
+  left: -21px;
+}
+.signal .sg-port[data-dir="out"] .sg-jack {
+  right: -21px;
+}
+.signal .sg-jack.is-plugged {
+  background: radial-gradient(circle, currentColor 0 5px, var(--sg-panel) 5.5px);
+}
+.signal .sg-jack.is-over,
+.signal .sg-jack.is-armed {
+  background: var(--sg-rubric);
+}
+.signal .sg-knobs {
+  gap: 8px 0;
+}
+.signal .sg-knob {
+  position: relative;
+  padding-top: 4px;
+}
+/* The knob: a black cap with a paper pointer, turned by --t (0 to 1, set by signal.js); the arc around it is the travel. */
+.signal .sg-knob::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background: var(--sg-black);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.35), 0 2px 2px rgba(0, 0, 0, 0.3);
+}
+.signal .sg-knob::after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: calc(50% - 1.25px);
+  width: 2.5px;
+  height: 11px;
+  border-radius: 2px;
+  background: var(--sg-panel);
+  transform-origin: 50% 12px;
+  transform: rotate(calc(-135deg + var(--t, 0) * 270deg));
+  z-index: 2;
+}
+.signal .sg-knob svg {
+  position: relative;
+  z-index: 1;
+  width: 40px;
+  height: 40px;
+}
+.signal .sg-knob-track {
+  stroke: var(--sg-rim);
+  stroke-width: 2.5;
+}
+.signal .sg-knob-fill {
+  stroke-width: 2.5;
+}
+.signal .sg-knob-tip {
+  display: none;
+}
+.signal .sg-knob:hover .sg-knob-track {
+  stroke: var(--sg-dim);
+}
+.signal .sg-cable-line {
+  stroke-width: 4;
+  opacity: 0.95;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.28));
+}
+.signal .sg-cable.is-hover .sg-cable-line {
+  stroke-width: 5;
+}
+.signal .sg-key {
+  border-radius: 0 0 5px 5px;
+  background: var(--sg-panel);
+  box-shadow: inset 0 0 0 1px var(--sg-rim), inset 0 -3px 0 var(--sg-edge);
+}
+.signal .sg-key.is-black {
+  background: var(--sg-black);
+  color: var(--sg-panel);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -3px 0 rgba(0, 0, 0, 0.5);
+}
+.signal .sg-key.is-black small {
+  color: var(--sg-panel);
+  opacity: 0.7;
+}
+.signal .sg-key.is-down {
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+.signal .sg-tbtn,
+.signal .sg-acts button,
+.signal .sg-panel .sg-row > button:not(.sg-link),
+.signal .sg-keep button,
+.signal .sg-own button,
+.signal .sg-margin .sg-row > button,
+.signal .sg-corner .sg-add,
+.signal .sg-zoom {
+  border-radius: 5px;
+  background: var(--sg-panel);
+  border-color: transparent;
+  box-shadow: inset 0 0 0 1px var(--sg-rim), 0 2px 0 var(--sg-edge);
+}
+.signal .sg-tbtn:hover,
+.signal .sg-acts button:hover:not([disabled]) {
+  background: var(--sg-panel);
+  box-shadow: inset 0 0 0 1px var(--sg-dim), 0 2px 0 var(--sg-edge);
+}
+.signal .sg-tbtn[aria-pressed="true"],
+.signal .sg-panel .sg-row > button.sg-primary {
+  background: var(--sg-black);
+  color: var(--sg-panel);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5), 0 1px 0 var(--sg-edge);
+}
+.signal .sg-tbtn[data-act="rec"][aria-pressed="true"] {
+  background: var(--sg-rubric);
+  color: #fff;
+}
+.signal .sg-cells {
+  border-radius: 4px;
+  background: var(--sg-black);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+.signal .sg-cell.is-beat {
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.1);
+}
+.signal .sg-cell.is-bar:not(:first-child) {
+  box-shadow: inset 1.5px 0 0 rgba(255, 255, 255, 0.22);
+}
+.signal .sg-cell:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.signal .sg-now {
+  opacity: 0.5;
+}
+.signal .sg-tempo input,
+.signal .sg-keep input,
+.signal .sg-own input,
+.signal .sg-rename {
+  border-radius: 5px;
+  border-color: transparent;
+  box-shadow: inset 0 0 0 1px var(--sg-rim), inset 0 2px 3px var(--sg-shade);
+}
+.signal .sg-menu {
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px var(--sg-rim), 0 2px 0 var(--sg-edge), 0 16px 40px rgba(0, 0, 0, 0.28);
+}
+
+/* In the dark, what is pressed or chosen is the light thing, and the knobs' caps sit a shade above the plate. */
+.signal[data-theme="dark"] .sg-choice button[aria-checked="true"],
+.signal[data-theme="dark"] .sg-tbtn[aria-pressed="true"],
+.signal[data-theme="dark"] .sg-panel .sg-row > button.sg-primary {
+  background: var(--sg-ink);
+  color: var(--sg-bg);
+  box-shadow: 0 1px 0 var(--sg-edge);
+}
+.signal[data-theme="dark"] .sg-tbtn[data-act="rec"][aria-pressed="true"] {
+  background: var(--sg-rubric);
+  color: #fff;
+}
+.signal[data-theme="dark"] .sg-knob::before {
+  background: var(--sg-white);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.6), 0 2px 2px rgba(0, 0, 0, 0.5);
+}
+.signal[data-theme="dark"] .sg-knob::after {
+  background: var(--sg-ink);
+}
+.signal[data-theme="dark"] .sg-key {
+  background: var(--sg-white);
+}
+.signal[data-theme="dark"] .sg-key.is-black {
+  color: var(--sg-ink);
+}
+.signal[data-theme="dark"] .sg-key.is-black small {
+  color: var(--sg-ink);
+}
+.signal[data-theme="dark"] .sg-key.is-down,
+.signal[data-theme="dark"] .sg-key.is-down small {
+  background: var(--sg-rubric);
+  color: #fff;
+}
+.signal[data-theme="dark"] .sg-key.is-down small {
+  background: none;
+}
+.signal[data-theme="dark"] .sg-notes.is-on {
+  color: var(--sg-ink);
+}
+.signal[data-theme="dark"] .sg-view,
+.signal[data-theme="dark"] .sg-notes,
+.signal[data-theme="dark"] .sg-cells {
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.8), inset 0 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+/* ---- A note on the floor: a slip of paper with a shadow beneath it, no rim and no edge, the words in the app's face. ---- */
+.signal .sg-mod[data-type="note"] {
+  width: 224px;
+  background: var(--sg-note);
+  color: var(--sg-note-ink);
+  box-shadow: var(--sg-lift);
+}
+.signal .sg-mod[data-type="note"].is-moving {
+  box-shadow: var(--sg-lift-high);
+}
+.signal .sg-mod[data-type="note"].is-new,
+.signal .sg-mod[data-type="note"]:focus-within {
+  box-shadow: 0 0 0 1.5px var(--sg-ink), var(--sg-lift);
+}
+.signal .sg-mod[data-type="note"] .sg-mod-head {
+  height: 34px;
+}
+.signal .sg-words {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* ---- Paper: the top bar's word with the paper's swatch; its menu lists the papers, the one on with a check. ---- */
+.sg-corner .sg-paper {
+  display: flex;
+  gap: 8px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+.sg-swatch {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--swatch, var(--sg-board));
+  box-shadow: inset 0 0 0 1px var(--sg-rim);
+}
+.sg-swatch[data-paper="cream"] {
+  --swatch: #f1f0ec;
+}
+.sg-swatch[data-paper="white"] {
+  --swatch: #f8f7f4;
+}
+.sg-swatch[data-paper="stone"] {
+  --swatch: #dedbd4;
+}
+.sg-swatch[data-paper="slate"] {
+  --swatch: #0e0f11;
+}
+.sg-swatch[data-paper="black"] {
+  --swatch: #050506;
+}
+.sg-swatch[data-paper="system"] {
+  background: linear-gradient(135deg, #dedbd4 50%, #0e0f11 50%);
+}
+.signal .sg-menu [role="menuitemradio"] {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.signal .sg-menu [role="menuitemradio"] > span {
+  flex: 1 1 auto;
+}
+.signal .sg-menu [role="menuitemradio"][aria-checked="true"] strong::after {
+  content: "  ✓" / ""; /* the state is aria-checked; the mark is not part of the name */
+  white-space: pre;
+}

@@ -1,0 +1,1896 @@
+/* Signal: a full-screen synthesizer over the page (a modal dialog, so the page is inert beneath).
+   Dark or light as the system is. The cables take the colour of what they carry: audio in ink,
+   a moving signal (mod) in blue, the keyboard's pitch in amber, its gate in green. */
+dialog.signal {
+  --sg-bg: #0f0f11;
+  --sg-board: #121215;
+  --sg-panel: #1a1a1e;
+  --sg-ink: #ededee;
+  --sg-quiet: #8d8d95;
+  --sg-dim: rgba(237, 237, 238, 0.34);
+  --sg-line: rgba(255, 255, 255, 0.1);
+  --sg-wash: rgba(255, 255, 255, 0.07);
+  --sg-dot: rgba(255, 255, 255, 0.085);
+  --sg-audio: #ededee;
+  --sg-mod: #6ea8ff;
+  --sg-pitch: #f0b44c;
+  --sg-gate: #4fcf8e;
+  --sg-on-ink: #0f0f11;
+  --sg-white: #26262b;
+  --sg-black: #050506;
+  --sg-black-ink: #8d8d95;
+  --sg-rec: #ec5f52;
+  --sg-t1: #e5866c;
+  --sg-t2: #a99ce6;
+  --sg-t3: #d9c287;
+  --sg-t4: #6dc6ba;
+  --sg-tone-ink: #121215;
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--sg-bg);
+  color: var(--sg-ink);
+  color-scheme: dark;
+  overflow: hidden;
+  outline: none;
+  display: flex;
+  flex-direction: column;
+  font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  transition: opacity 140ms ease;
+}
+dialog.signal[data-theme="light"] {
+  --sg-bg: #f6f5f1;
+  --sg-board: #efeee9;
+  --sg-panel: #ffffff;
+  --sg-ink: #1d1d20;
+  --sg-quiet: #6b6b73;
+  --sg-dim: rgba(29, 29, 32, 0.3);
+  --sg-line: rgba(0, 0, 0, 0.11);
+  --sg-wash: rgba(0, 0, 0, 0.055);
+  --sg-dot: rgba(0, 0, 0, 0.1);
+  --sg-audio: #1d1d20;
+  --sg-mod: #2a6ee0;
+  --sg-pitch: #b97a0c;
+  --sg-gate: #1d8f58;
+  --sg-on-ink: #ffffff;
+  --sg-white: #ffffff;
+  --sg-black: #1d1d20;
+  --sg-black-ink: #c9c9ce;
+  --sg-rec: #c8372b;
+  --sg-t1: #b9553b;
+  --sg-t2: #6556bd;
+  --sg-t3: #8f7134;
+  --sg-t4: #257f74;
+  --sg-tone-ink: #ffffff;
+  color-scheme: light;
+}
+dialog.signal::backdrop {
+  background: #0f0f11;
+}
+dialog.signal.is-closing {
+  opacity: 0;
+}
+.signal button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.signal :focus-visible {
+  outline: 1.5px solid var(--sg-ink);
+  outline-offset: 2px;
+}
+.signal .sg-corner svg,
+.signal .sg-x svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.signal kbd {
+  font: 600 11px/1 ui-monospace, Menlo, monospace;
+  padding: 2px 5px;
+  border: 1px solid var(--sg-line);
+  border-radius: 4px;
+}
+
+/* The bar: the name, Add, Undo, the sound, the way back. */
+.sg-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 6px max(20px, env(safe-area-inset-left));
+}
+.sg-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--sg-quiet);
+}
+.sg-beta {
+  margin-left: 4px;
+  font-weight: 400;
+  color: var(--sg-dim);
+}
+.sg-corner {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.sg-corner button {
+  display: grid;
+  place-items: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--sg-quiet);
+  transition: color 160ms var(--glide, ease), background-color 160ms var(--glide, ease);
+}
+.sg-corner button:hover,
+.sg-corner button[aria-expanded="true"] {
+  color: var(--sg-ink);
+  background: var(--sg-wash);
+}
+/* Above the board, and not scrolled with it: the front voice's name, then Undo and Add, which belong to the board. */
+.sg-shead {
+  grid-area: shead;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  padding: 0 max(14px, env(safe-area-inset-right)) 0 14px;
+}
+.sg-btools button {
+  min-width: 30px;
+  height: 30px;
+}
+.sg-corner .sg-add {
+  display: flex;
+  gap: 4px;
+  padding: 0 12px 0 8px;
+  margin-left: 4px;
+  color: var(--sg-ink);
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px var(--sg-line);
+}
+
+/* The body: the lesson on the left, the board beside it. */
+.sg-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr) var(--sg-margin, 264px);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas: "side shead margin" "side stage margin" "side loop margin";
+}
+.sg-side {
+  grid-area: side;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 4px 20px 12px max(20px, env(safe-area-inset-left));
+}
+.sg-seg {
+  flex: none;
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 9px;
+  background: var(--sg-wash);
+  margin-bottom: 16px;
+}
+.sg-seg button {
+  flex: 1;
+  height: 30px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--sg-quiet);
+  font-weight: 500;
+}
+.sg-seg button[aria-selected="true"] {
+  background: var(--sg-panel);
+  color: var(--sg-ink);
+  box-shadow: 0 0 0 1px var(--sg-line);
+}
+.sg-panel {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-width: thin;
+  padding-right: 4px;
+}
+.sg-panel h3 {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.sg-patches h3 {
+  margin: 22px 0 6px;
+  font-size: 13px;
+  color: var(--sg-quiet);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.sg-of {
+  margin: 0 0 6px;
+  color: var(--sg-quiet);
+  font-size: 13px;
+}
+.sg-link {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--sg-quiet);
+  text-decoration: underline;
+  text-decoration-color: var(--sg-quiet);
+  text-underline-offset: 3px;
+}
+.sg-link:hover {
+  color: var(--sg-ink);
+}
+.sg-quiet {
+  color: var(--sg-quiet);
+  font-size: 13px;
+}
+.sg-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: step;
+}
+.sg-steps li {
+  counter-increment: step;
+  position: relative;
+  padding: 0 0 14px 28px;
+}
+.sg-steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 1px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--sg-dim);
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+  color: var(--sg-quiet);
+  font-variant-numeric: tabular-nums;
+}
+.sg-steps li.is-done::before {
+  content: "✓";
+  background: var(--sg-ink);
+  color: var(--sg-on-ink);
+  box-shadow: none;
+}
+.sg-do {
+  margin: 0;
+  font-weight: 500;
+}
+.is-done .sg-do {
+  color: var(--sg-quiet);
+  font-weight: 400;
+}
+.sg-why {
+  margin: 6px 0 0;
+}
+.sg-steps li.is-new {
+  animation: sg-arrive var(--glide-ms, 320ms) var(--glide, ease) both;
+}
+@keyframes sg-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.sg-end {
+  margin: 4px 0 12px;
+  font-weight: 600;
+}
+.sg-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.sg-panel .sg-row > button:not(.sg-link),
+.sg-keep button {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--sg-line);
+  background: transparent;
+  font-weight: 500;
+}
+.sg-panel .sg-row > button.sg-primary {
+  background: var(--sg-ink);
+  color: var(--sg-on-ink);
+  border-color: var(--sg-ink);
+}
+.sg-lessons,
+.sg-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sg-lessons button {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  width: 100%;
+  padding: 9px 8px;
+  margin: 0 -8px;
+  width: calc(100% + 16px);
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+}
+.sg-lessons button:hover,
+.sg-lessons button[aria-current="true"] {
+  background: var(--sg-wash);
+}
+.sg-n {
+  flex: none;
+  width: 16px;
+  color: var(--sg-quiet);
+  font-variant-numeric: tabular-nums;
+}
+.sg-lessons strong,
+.sg-list strong {
+  display: block;
+  font-weight: 500;
+}
+.sg-lessons small,
+.sg-list small {
+  display: block;
+  color: var(--sg-quiet);
+  font-size: 13px;
+}
+.sg-lessons span:nth-child(2) {
+  flex: 1;
+}
+.sg-lessons em {
+  font-style: normal;
+  font-size: 12px;
+  color: var(--sg-quiet);
+}
+.sg-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--sg-quiet);
+}
+.sg-keep input {
+  flex: 1;
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid var(--sg-line);
+  background: var(--sg-panel);
+  color: var(--sg-ink);
+  font: inherit;
+}
+.sg-list li {
+  display: flex;
+  align-items: center;
+}
+.sg-open {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 8px;
+  margin-left: -8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+}
+.sg-open:hover {
+  background: var(--sg-wash);
+}
+.sg-x {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--sg-quiet);
+}
+.sg-x:hover {
+  color: var(--sg-ink);
+  background: var(--sg-wash);
+}
+.sg-x svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+/* The board, scaled to fit its stage. */
+/* The floor: it has no edges. The camera moves the board layer under it; the dots move with the camera (signal.js applyCamera). */
+.sg-stage {
+  grid-area: stage;
+  position: relative;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  background-image: radial-gradient(var(--sg-dot) 1px, transparent 1.4px);
+  background-size: 48px 48px;
+  cursor: grab;
+  touch-action: none;
+}
+.sg-stage.is-panning {
+  cursor: grabbing;
+}
+.sg-stage.is-panning * {
+  cursor: grabbing !important;
+}
+.sg-zoom {
+  position: absolute;
+  right: 14px;
+  bottom: 10px;
+  z-index: 2;
+  padding: 3px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--sg-panel);
+  box-shadow: 0 0 0 1px var(--sg-line);
+  color: var(--sg-quiet);
+  font: inherit;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.sg-zoom:hover {
+  color: var(--sg-ink);
+}
+.sg-zoom[hidden] {
+  display: none;
+}
+.sg-board {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  touch-action: none;
+  will-change: transform;
+}
+.sg-cables {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 0;
+}
+/* A name written on the floor where a session arrived; it sits just above the cards it names. */
+.sg-place {
+  position: absolute;
+  z-index: 0;
+  margin: 0;
+  transform: translateY(-100%);
+  padding: 0 0 4px;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sg-quiet);
+  letter-spacing: -0.005em;
+  pointer-events: none;
+}
+.sg-board.is-pulling .sg-cables {
+  z-index: 3;
+}
+.sg-cable-line {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  opacity: 0.82;
+  transition: opacity 120ms ease, stroke-width 120ms ease;
+}
+.sg-cable-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 14;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+.sg-cable.is-hover .sg-cable-line {
+  opacity: 1;
+  stroke-width: 4;
+}
+.sg-cable-line.is-pulling {
+  opacity: 1;
+  stroke-dasharray: 6 6;
+}
+.sg-board.is-pulling .sg-cable {
+  opacity: 0.4;
+}
+
+/* A card's state line (the Microphone's, the Looper's) and its buttons (the Looper's Record, Undo layer, Clear, Set the clock). */
+.sg-state {
+  margin: 8px 0 0;
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: var(--sg-quiet);
+}
+.sg-state:empty {
+  display: none;
+}
+.sg-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+.sg-acts button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: 1px solid var(--sg-line);
+  background: transparent;
+  color: var(--sg-ink);
+  font-size: 12px;
+  font-weight: 500;
+}
+.sg-acts button:hover:not([disabled]) {
+  background: var(--sg-wash);
+}
+.sg-acts button[disabled] {
+  opacity: 0.45;
+  cursor: default;
+}
+.sg-acts button kbd {
+  font-size: 10px;
+  opacity: 0.8;
+}
+.sg-acts button[data-mode="recording"],
+.sg-acts button[data-mode="overdub"] {
+  border-color: var(--sg-rec);
+  color: var(--sg-rec);
+}
+.sg-acts button[data-mode="armed"] {
+  border-color: var(--sg-dim);
+  color: var(--sg-quiet);
+}
+.sg-piano.has-looper .sg-key[data-code="KeyL"] {
+  opacity: 0.35;
+}
+
+/* A module: its name (the handle), its picture, its jacks on the edges (inputs left, outputs right), its knobs. */
+.sg-mod {
+  position: absolute;
+  z-index: 1;
+  width: 196px;
+  box-sizing: border-box;
+  padding: 0 10px 10px;
+  border-radius: 10px;
+  background: var(--sg-panel);
+  box-shadow: 0 0 0 1px var(--sg-line), 0 1px 2px rgba(0, 0, 0, 0.12);
+  transition: opacity 200ms var(--glide, ease), box-shadow 200ms var(--glide, ease);
+}
+.sg-mod.is-quiet {
+  opacity: 0.62;
+}
+.sg-mod.is-moving {
+  z-index: 3;
+  box-shadow: 0 0 0 1px var(--sg-dim), 0 10px 28px rgba(0, 0, 0, 0.22);
+}
+.sg-mod.is-new {
+  box-shadow: 0 0 0 1.5px var(--sg-ink), 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+.sg-mod-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
+  margin: 0 -4px 0 0;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.is-moving .sg-mod-head {
+  cursor: grabbing;
+}
+.sg-mod-name {
+  font-weight: 600;
+  font-size: 13px;
+}
+.sg-mod-head .sg-x {
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.sg-mod:hover .sg-x,
+.sg-mod:focus-within .sg-x,
+.sg-x:focus-visible {
+  opacity: 1;
+}
+@media (hover: none) {
+  .sg-mod-head .sg-x {
+    opacity: 1;
+  }
+}
+.sg-view {
+  display: block;
+  width: 176px;
+  height: 46px;
+  border-radius: 6px;
+}
+.sg-notes {
+  margin: 0;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  color: var(--sg-quiet);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  padding: 0 6px;
+}
+.sg-notes.is-on {
+  color: var(--sg-ink);
+  font-weight: 600;
+  font-size: 15px;
+}
+.sg-ports {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 8px 0 2px;
+  font-size: 12px;
+  color: var(--sg-quiet);
+}
+.sg-ports ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sg-outs {
+  text-align: right;
+}
+.sg-port {
+  position: relative;
+  height: 24px;
+  line-height: 24px;
+}
+.sg-port[data-dir="in"] {
+  padding-left: 2px;
+}
+.sg-jack {
+  position: absolute;
+  top: 5px;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2.5px solid var(--sg-audio);
+  background: var(--sg-panel);
+  box-sizing: border-box;
+  touch-action: none;
+  transition: transform 120ms var(--glide, ease), opacity 120ms ease;
+}
+.sg-jack::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+}
+.sg-port[data-dir="in"] .sg-jack {
+  left: -17px;
+}
+.sg-port[data-dir="out"] .sg-jack {
+  right: -17px;
+}
+.sg-jack[data-kind="mod"] {
+  border-color: var(--sg-mod);
+}
+.sg-jack[data-kind="pitch"] {
+  border-color: var(--sg-pitch);
+}
+.sg-jack[data-kind="gate"] {
+  border-color: var(--sg-gate);
+}
+.sg-jack.is-plugged {
+  background: var(--sg-bg);
+}
+.sg-jack:hover {
+  transform: scale(1.25);
+}
+.sg-board.is-pulling .sg-jack:not(.is-target):not(.is-armed) {
+  opacity: 0.25;
+}
+.sg-jack.is-target {
+  transform: scale(1.3);
+}
+.sg-jack.is-over,
+.sg-jack.is-armed {
+  transform: scale(1.5);
+  background: var(--sg-ink);
+}
+.sg-params {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+.sg-params:empty {
+  display: none;
+}
+/* A note's words: the card grows with them (signal.js sets the height), and nothing else is on the card. */
+.sg-words {
+  display: block;
+  width: 100%;
+  min-height: 64px;
+  margin: 0;
+  padding: 0 0 4px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  line-height: 1.4;
+  resize: none;
+  overflow: hidden;
+  outline: none;
+  field-sizing: content;
+}
+.sg-words::placeholder {
+  color: var(--sg-quiet);
+}
+.sg-choice {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--sg-wash);
+}
+.sg-choice button {
+  flex: 1;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--sg-quiet);
+  font-size: 12px;
+  display: grid;
+  place-items: center;
+}
+.sg-choice button svg {
+  width: 20px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.sg-choice button[aria-checked="true"] {
+  background: var(--sg-panel);
+  color: var(--sg-ink);
+  box-shadow: 0 0 0 1px var(--sg-line);
+}
+.sg-knobs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px 0;
+  margin: 0 -4px;
+}
+.sg-knob {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 8px;
+  padding: 2px 0;
+  cursor: ns-resize;
+  touch-action: none;
+  user-select: none;
+  min-width: 0;
+}
+.sg-knob svg {
+  width: 36px;
+  height: 36px;
+  fill: none;
+  stroke-linecap: round;
+}
+.sg-knob-track {
+  stroke: var(--sg-line);
+  stroke-width: 3;
+}
+.sg-knob-fill {
+  stroke: var(--sg-ink);
+  stroke-width: 3;
+}
+.sg-knob-tip {
+  stroke: var(--sg-ink);
+  stroke-width: 3;
+}
+.sg-knob-label,
+.sg-knob-value {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+.sg-knob-label {
+  color: var(--sg-quiet);
+}
+.sg-knob-value {
+  font-variant-numeric: tabular-nums;
+}
+.sg-knob:hover .sg-knob-track,
+.is-turning .sg-knob:focus .sg-knob-track {
+  stroke: var(--sg-dim);
+}
+
+/* The keyboard: the computer's keys as a piano, the octave beside it, the notes held. */
+.sg-kbd {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  gap: 16px;
+  padding: 10px max(20px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+}
+.sg-oct {
+  margin: 0 0 10px;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--sg-quiet);
+  font-size: 13px;
+}
+.sg-oct-keys {
+  display: inline-flex;
+  gap: 3px;
+}
+.sg-oct [data-oct] {
+  color: var(--sg-ink);
+  font-weight: 600;
+}
+.sg-held {
+  margin: 0;
+}
+.sg-piano {
+  --w: 40px;
+  position: relative;
+  width: calc(var(--whites) * var(--w));
+  height: 78px;
+}
+.sg-key {
+  position: absolute;
+  top: 0;
+  left: calc(var(--i) * var(--w));
+  width: var(--w);
+  height: 78px;
+  padding: 0 0 7px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 0 0 7px 7px;
+  background: var(--sg-white);
+  box-shadow: inset 0 0 0 1px var(--sg-line);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 2px;
+  font: 600 12px/1 ui-monospace, Menlo, monospace;
+  color: var(--sg-quiet);
+  touch-action: none;
+  user-select: none;
+  transition: background-color 60ms ease, color 60ms ease;
+}
+.sg-key small {
+  font: 400 10px/1 -apple-system, system-ui, sans-serif;
+  color: var(--sg-quiet);
+  opacity: 0.8;
+}
+.sg-key.is-black {
+  z-index: 1;
+  left: calc(var(--i) * var(--w) + var(--w) / 2 - 13px);
+  width: 26px;
+  height: 46px;
+  padding-bottom: 6px;
+  background: var(--sg-black);
+  color: var(--sg-black-ink);
+  box-shadow: inset 0 0 0 1px var(--sg-line);
+}
+.sg-key.is-down {
+  background: var(--sg-ink);
+  color: var(--sg-on-ink);
+}
+.sg-key.is-down small {
+  color: var(--sg-on-ink);
+}
+
+/* The Add menu and the line that says what happened. */
+.sg-menu {
+  position: fixed;
+  z-index: 10;
+  width: 280px;
+  max-height: calc(100dvh - 90px);
+  overflow: auto;
+  padding: 6px;
+  border-radius: 12px;
+  background: var(--sg-panel);
+  box-shadow: 0 0 0 1px var(--sg-line), 0 16px 40px rgba(0, 0, 0, 0.28);
+}
+.sg-menu button {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+}
+.sg-menu button:hover:not([disabled]),
+.sg-menu button:focus-visible {
+  background: var(--sg-wash);
+  outline: none;
+}
+.sg-menu button[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+.sg-menu-h {
+  margin: 8px 10px 2px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--sg-quiet);
+}
+.sg-menu-h:first-child {
+  margin-top: 4px;
+}
+.sg-menu strong {
+  display: block;
+  font-weight: 600;
+}
+.sg-menu small {
+  display: block;
+  color: var(--sg-quiet);
+  font-size: 12px;
+  line-height: 1.35;
+}
+.sg-said {
+  position: fixed;
+  left: 50%;
+  bottom: calc(126px + env(safe-area-inset-bottom));
+  margin: 0;
+  max-width: min(520px, calc(100vw - 32px));
+  padding: 8px 14px;
+  border-radius: 9px;
+  background: var(--sg-ink);
+  color: var(--sg-on-ink);
+  font-size: 13px;
+  transform: translate(-50%, 6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms var(--glide, ease), transform 200ms var(--glide, ease);
+}
+.sg-said.is-on {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* A window narrower than the three columns: the Ghost Producer becomes a tab beside the lessons. */
+@media (max-width: 1199px) {
+  .sg-body {
+    grid-template-columns: 280px minmax(0, 1fr);
+    grid-template-areas: "side shead" "side stage" "side loop";
+  }
+  .sg-margin {
+    display: none;
+  }
+}
+@media (min-width: 1200px) {
+  .sg-notes-tab {
+    display: none;
+  }
+}
+/* A narrow window: the lesson goes above the board, which scrolls. */
+@media (max-width: 860px) {
+  .sg-body {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(320px, 1fr) auto;
+    grid-template-areas: "side" "shead" "stage" "loop";
+    overflow: auto;
+  }
+  .sg-side {
+    width: auto;
+    max-height: 34vh;
+    padding: 0 16px 8px;
+  }
+  .sg-vrow {
+    grid-template-columns: 92px minmax(0, 1fr) !important;
+  }
+  .sg-vtools,
+  .sg-vscope {
+    display: none !important;
+  }
+  .sg-kbd {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+  .sg-oct {
+    display: none;
+  }
+  .sg-piano {
+    --w: min(40px, calc((100vw - 32px) / var(--whites)));
+  }
+}
+
+/* The loop: the transport, the sections, one row of steps per voice. Drawn in the board's ink and spacing. */
+.sg-front {
+  min-width: 0;
+  height: 30px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sg-quiet);
+}
+
+[data-tone="1"] {
+  --tone: var(--sg-t1);
+}
+[data-tone="2"] {
+  --tone: var(--sg-t2);
+}
+[data-tone="3"] {
+  --tone: var(--sg-t3);
+}
+[data-tone="4"] {
+  --tone: var(--sg-t4);
+}
+.sg-tone {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background: var(--tone);
+}
+.sg-loop {
+  grid-area: loop;
+  min-width: 0;
+  padding: 4px max(12px, env(safe-area-inset-right)) 4px 12px;
+}
+.sg-transport {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  margin-bottom: 8px;
+}
+.sg-tplay {
+  display: flex;
+  gap: 4px;
+}
+.sg-tbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 8px 0 11px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--sg-line);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.sg-tbtn:hover {
+  background: var(--sg-wash);
+}
+.sg-tbtn kbd {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--sg-dim);
+  font-weight: 500;
+}
+.sg-tbtn[aria-pressed="true"] {
+  background: var(--sg-ink);
+  color: var(--sg-on-ink);
+}
+.sg-tbtn[data-act="rec"][aria-pressed="true"] {
+  background: var(--sg-rec);
+  color: #fff;
+}
+.sg-tbtn[aria-pressed="true"] kbd {
+  color: inherit;
+  border-color: currentColor;
+  opacity: 0.7;
+}
+.sg-tempo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--sg-quiet);
+}
+.sg-tempo input,
+.sg-rename {
+  width: 56px;
+  height: 28px;
+  padding: 0 4px 0 8px;
+  border: 1px solid var(--sg-line);
+  border-radius: 7px;
+  background: var(--sg-panel);
+  color: var(--sg-ink);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+}
+.sg-rename {
+  width: 118px;
+  height: 26px;
+}
+.sg-bars {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--sg-wash);
+}
+.sg-bars button {
+  display: grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0;
+  line-height: 1;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--sg-quiet);
+  font-variant-numeric: tabular-nums;
+}
+.sg-bars button[aria-checked="true"] {
+  background: var(--sg-panel);
+  color: var(--sg-ink);
+  box-shadow: 0 0 0 1px var(--sg-line);
+}
+.sg-bars span {
+  padding: 0 7px 0 4px;
+  font-size: 13px;
+  color: var(--sg-quiet);
+}
+.sg-sections {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.sg-sec {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 8px;
+}
+.sg-sec.is-on {
+  background: var(--sg-wash);
+}
+.sg-sec > button[role="tab"] {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 4px 0 9px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--sg-quiet);
+  font-weight: 600;
+}
+.sg-sec.is-on > button[role="tab"] {
+  color: var(--sg-ink);
+}
+.sg-times {
+  height: 28px;
+  padding: 0 8px 0 2px;
+  border: 0;
+  background: transparent;
+  color: var(--sg-quiet);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.sg-sec .sg-x {
+  width: 22px;
+  height: 22px;
+  margin-right: 3px;
+}
+.sg-sections .sg-link {
+  margin-left: 6px;
+  font-size: 13px;
+}
+.sg-lfoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 24px;
+  margin-top: 4px;
+  padding-left: 7px;
+}
+.sg-lfoot .sg-link {
+  font-size: 13px;
+}
+.sg-pen {
+  margin: 0;
+  font-size: 12px;
+  color: var(--sg-quiet);
+  text-align: right;
+}
+.sg-pen strong {
+  color: var(--sg-ink);
+  font-weight: 600;
+}
+.sg-rows {
+  display: grid;
+  gap: 3px;
+}
+.sg-vrow {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr) 70px;
+  align-items: center;
+  gap: 8px;
+}
+.sg-vname {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  height: 26px;
+  padding: 0 6px 0 7px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--sg-quiet);
+  text-align: left;
+}
+.sg-vlabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sg-vname kbd {
+  flex: none;
+  padding: 1px 4px;
+  font-size: 10px;
+  font-weight: 500;
+}
+.sg-vscope {
+  flex: none;
+  width: 34px;
+  height: 16px;
+}
+.sg-vname:hover {
+  color: var(--sg-ink);
+}
+.is-front .sg-vname {
+  background: var(--sg-wash);
+  color: var(--sg-ink);
+  font-weight: 600;
+}
+.sg-cells {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  height: 26px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--sg-board);
+  box-shadow: inset 0 0 0 1px var(--sg-line);
+}
+.sg-cell {
+  grid-row: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  appearance: none;
+  background: transparent;
+}
+.sg-cell.is-beat {
+  box-shadow: inset 1px 0 0 var(--sg-line);
+}
+.sg-cell.is-bar:not(:first-child) {
+  box-shadow: inset 1.5px 0 0 var(--sg-dim);
+}
+.sg-cell:hover {
+  background: var(--sg-wash);
+}
+.sg-cell:focus-visible {
+  outline-offset: -2px;
+}
+.sg-note {
+  grid-row: 1;
+  z-index: 1;
+  min-width: 0;
+  margin: 4px 1px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--tone);
+  color: var(--sg-tone-ink);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 18px;
+  overflow: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.sg-vrow:not(.is-front) .sg-note {
+  opacity: 0.72;
+}
+.sg-now {
+  grid-row: 1;
+  z-index: 2;
+  background: var(--sg-ink);
+  opacity: 0.16;
+  pointer-events: none;
+}
+.sg-vtools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 160ms var(--glide, ease);
+}
+.sg-vrow:hover .sg-vtools,
+.sg-vrow:focus-within .sg-vtools {
+  opacity: 1;
+}
+@media (hover: none) {
+  .sg-vtools {
+    opacity: 1;
+  }
+}
+
+/* The Ghost Producer's column: a chat, with a handle on its left edge for the width. */
+.sg-margin {
+  grid-area: margin;
+  position: relative;
+  min-height: 0;
+  padding: 4px max(20px, env(safe-area-inset-right)) 14px 12px;
+}
+.sg-resize {
+  position: absolute;
+  left: -3px;
+  top: 0;
+  bottom: 0;
+  width: 7px;
+  cursor: col-resize;
+  touch-action: none;
+  z-index: 2;
+}
+.sg-resize::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--sg-ink);
+  opacity: 0;
+  transition: opacity 160ms;
+}
+.sg-resize:hover::after,
+.sg-resize.is-dragging::after {
+  opacity: 0.5;
+}
+.sg-mtitle {
+  margin: 6px 0 10px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.sg-model {
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--sg-quiet);
+  margin-left: 4px;
+}
+/* The producer's hand on the board: a hollow ring that glides from spot to spot, with the step's reason beside it.
+   It lives in the board's units, so it moves and scales with the camera. */
+.sg-hand {
+  position: absolute;
+  z-index: 6;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    left var(--glide-ms, 320ms) var(--glide, ease),
+    top var(--glide-ms, 320ms) var(--glide, ease),
+    opacity 200ms var(--glide, ease);
+}
+.sg-hand.is-on {
+  opacity: 1;
+}
+.sg-hand > i {
+  position: absolute;
+  left: -9px;
+  top: -9px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 2px var(--sg-ink),
+    0 0 0 3px var(--sg-panel);
+}
+.sg-hand > i::after {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 7px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--sg-ink);
+}
+.sg-hand-say {
+  position: absolute;
+  left: 18px;
+  top: -10px;
+  width: max-content;
+  max-width: 260px;
+  margin: 0;
+  padding: 7px 10px;
+  border-radius: 6px;
+  background: var(--sg-panel);
+  color: var(--sg-ink);
+  font-size: 13px;
+  line-height: 1.4;
+  box-shadow:
+    inset 0 0 0 1px var(--sg-line),
+    0 8px 20px -10px rgba(0, 0, 0, 0.5);
+}
+.sg-hand-say:empty {
+  display: none;
+}
+.sg-hand.is-left .sg-hand-say {
+  left: auto;
+  right: 18px;
+}
+/* Read by a screen reader, not seen: the column already shows the step under way. */
+.sg-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.sg-hand-say b {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--sg-quiet);
+}
+.is-performing .sg-board {
+  pointer-events: none;
+}
+.is-performing .sg-knob::after,
+.is-performing .sg-knob-fill,
+.is-performing .sg-knob-tip {
+  transition: transform var(--glide-ms, 320ms) var(--glide, ease);
+}
+/* The conversation: the kid's lines to the right on a slip of paper, the producer's plain to the left, the
+   app's quiet. A card inside a reply holds the moves for the board: steps folded under a title, buttons beneath. */
+.sg-margin {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.sg-margin .sg-ghost {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.sg-chat {
+  list-style: none;
+  flex: 1;
+  min-height: 0;
+  margin: 0 -6px 0 0;
+  padding: 2px 6px 6px 0;
+  overflow: auto;
+  scrollbar-width: thin;
+}
+.sg-msg {
+  margin: 0 0 12px;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+.sg-msg-by {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.sg-msg-text {
+  margin: 0;
+  color: var(--sg-ink);
+}
+.sg-msg.is-you {
+  display: flex;
+  justify-content: flex-end;
+}
+.sg-msg.is-you .sg-msg-text {
+  max-width: 86%;
+  padding: 6px 10px;
+  border-radius: 10px 10px 2px 10px;
+  background: var(--sg-panel);
+  box-shadow: inset 0 0 0 1px var(--sg-line);
+}
+.sg-msg.is-app .sg-msg-text {
+  font-size: 12.5px;
+  color: var(--sg-quiet);
+}
+.sg-card {
+  margin: 8px 0 2px;
+  padding: 6px 10px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--sg-line);
+  background: var(--sg-panel);
+  font-size: 13px;
+}
+.sg-card-steps summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  cursor: pointer;
+  list-style: none;
+  padding-right: 18px;
+  position: relative;
+}
+.sg-card-steps summary::-webkit-details-marker {
+  display: none;
+}
+.sg-card-steps summary::after {
+  content: "";
+  position: absolute;
+  right: 4px;
+  top: 0.55em;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid var(--sg-quiet);
+  border-bottom: 1.5px solid var(--sg-quiet);
+  transform: rotate(45deg);
+  transition: transform var(--glide-ms, 320ms) var(--glide, ease);
+}
+.sg-card-steps[open] summary::after {
+  transform: rotate(-135deg);
+  top: 0.8em;
+}
+.sg-card-title {
+  font-weight: 600;
+  color: var(--sg-ink);
+}
+.sg-card-sub {
+  color: var(--sg-quiet);
+  font-size: 12.5px;
+}
+.sg-msg-acts,
+.sg-asks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 0;
+}
+.sg-msg-acts button,
+.sg-asks > button {
+  min-height: 28px;
+  height: auto;
+  margin: 0;
+  padding: 4px 10px;
+  border: 1px solid var(--sg-line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--sg-ink);
+  font-size: 12.5px;
+  line-height: 18px;
+  text-align: left;
+  white-space: normal;
+}
+.sg-compose {
+  flex: none;
+  margin: 6px 0 0;
+  padding-top: 10px;
+}
+.sg-compose .sg-asks {
+  margin: 0 0 10px;
+}
+.sg-compose .sg-own {
+  margin: 0;
+}
+.sg-did-steps {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--sg-line);
+}
+.sg-did-steps li {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--sg-quiet);
+}
+.sg-did-steps li:last-child {
+  margin-bottom: 0;
+}
+.sg-did-steps li.is-now {
+  color: var(--sg-ink);
+}
+.sg-did-steps li.is-skipped {
+  text-decoration: line-through;
+  text-decoration-color: var(--sg-quiet);
+}
+.sg-did-steps li strong {
+  display: block;
+  font-weight: 500;
+  color: var(--sg-ink);
+}
+.sg-did-steps li.is-next strong,
+.sg-did-steps li.is-skipped strong {
+  font-weight: 400;
+}
+.sg-did-steps li.is-next strong {
+  color: var(--sg-ink);
+}
+.sg-panel .sg-mtitle {
+  font-size: 20px;
+}
+.sg-ggroup h4,
+.sg-mhead {
+  margin: 14px 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sg-quiet);
+}
+.sg-mhead {
+  margin-top: 20px;
+}
+.sg-ggroup h4 .sg-link {
+  color: inherit;
+  font-weight: inherit;
+}
+.sg-gnotes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sg-gnote {
+  position: relative;
+  margin: 0 0 12px;
+  padding-left: 18px;
+}
+.sg-gnote::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0.5em;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.3px var(--sg-quiet);
+}
+.sg-gtext {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--sg-quiet);
+}
+.sg-gby {
+  margin: 3px 0 0;
+  font-size: 11.5px;
+  color: var(--sg-quiet);
+  opacity: 0.8;
+}
+.sg-gacts {
+  display: flex;
+  gap: 14px;
+  margin: 3px 0 0;
+  font-size: 12px;
+  color: var(--sg-quiet);
+}
+
+/* The questions read as a list, not as four buttons shouting: plain ink on the column, a wash only under the pointer. */
+.sg-asks {
+  gap: 0 !important;
+}
+.sg-asks > button:hover:not([disabled]),
+.sg-msg-acts button:hover:not([disabled]) {
+  background: var(--sg-wash);
+}
+.sg-asks button[disabled],
+.sg-own input[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+.sg-own {
+  margin-top: 18px;
+}
+.sg-own input {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid var(--sg-line);
+  background: var(--sg-panel);
+  color: var(--sg-ink);
+  font: inherit;
+}
+.sg-own button {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--sg-line);
+  background: transparent;
+}
+.sg-small {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--sg-quiet);
+}
+.sg-asking {
+  font-size: 13px;
+  color: var(--sg-quiet);
+}
+.sg-margin .sg-row > button,
+.sg-panel .sg-ghost .sg-row > button {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--sg-line);
+  background: transparent;
+}
+.sg-numbers {
+  list-style: none;
+  margin: 0 0 6px;
+  padding: 0;
+  font-size: 13px;
+}
+.sg-numbers li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 0;
+}
+.sg-numbers li span:last-child {
+  color: var(--sg-quiet);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The master class: the sessions in their parts, and a session's page. */
+.sg-session .sg-h {
+  margin: 18px 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sg-quiet);
+}
+.sg-session .sg-h:first-of-type {
+  margin-top: 14px;
+}
+.sg-session .sg-p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+.sg-session .sg-sline {
+  margin: -8px 0 0;
+  font-size: 13.5px;
+}
+.sg-session .sg-builds {
+  margin-top: 4px;
+}
+.sg-nbrow {
+  display: flex;
+  gap: 14px;
+  margin: 6px 0 0;
+  font-size: 12.5px;
+}
+.sg-nb {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--sg-ink);
+}
+.sg-margin .sg-nb,
+.sg-panel .sg-ghost .sg-nb {
+  margin: 0;
+  color: var(--sg-quiet);
+}
+
+/* The projects. */
+.sg-course {
+  margin: 0 0 6px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--sg-quiet);
+}
+.sg-course ~ .sg-course {
+  margin-top: 22px !important;
+}
+.sg-course-line {
+  margin: -2px 0 6px;
+  font-size: 12px;
+}
+.sg-mini {
+  display: block;
+  width: 64px;
+  height: 16px;
+  margin-top: 5px;
+  fill: var(--sg-quiet);
+}
+.sg-projects .sg-quiet {
+  font-size: 13px;
+}
+.sg-projects .sg-row {
+  margin-top: 10px;
+}
+.sg-exports {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--sg-quiet);
+}
+.sg-seg button {
+  font-size: 13px;
+  padding: 0 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sg-vtools {
+    transition: none;
+  }
+  dialog.signal,
+  .sg-said,
+  .sg-mod,
+  .sg-jack,
+  .sg-hand,
+  .is-performing .sg-knob::after,
+  .is-performing .sg-knob-fill,
+  .is-performing .sg-knob-tip,
+  .sg-steps li.is-new {
+    transition: none;
+    animation: none;
+  }
+}

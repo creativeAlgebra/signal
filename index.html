@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Signal</title>
+<meta name="description" content="A synthesizer to learn by patching, and a master class in making music from nothing, played on your computer's keyboard.">
+</head>
+<body>
+<main>
+  <h1>Signal</h1>
+  <p>A synthesizer to learn by patching, and a master class in making music from nothing. Cables, knobs, your voice through pedals and a looper, and your computer’s keyboard as the piano. Everything stays in this browser.</p>
+  <div class="site-actions">
+    <button type="button" data-open>Open Signal</button>
+    <button type="button" class="quiet" data-setup>Ghost Producer key</button>
+  </div>
+</main>
+<dialog class="site-key" data-key aria-labelledby="key-title">
+  <form method="dialog">
+    <h2 id="key-title">The Ghost Producer</h2>
+    <p>It asks questions about your track and leaves notes; it never plays or places a note. It uses your own key, kept in this browser and sent only to <span data-who>Anthropic</span>. When you ask, your project's notes and numbers go there too.</p>
+    <label for="k-provider">Service</label>
+    <select id="k-provider" name="provider">
+      <option value="anthropic">Anthropic</option>
+      <option value="openrouter">OpenRouter</option>
+    </select>
+    <label for="k-key">Key</label>
+    <input id="k-key" name="key" type="password" autocomplete="off" spellcheck="false">
+    <label for="k-model">Model (optional)</label>
+    <input id="k-model" name="model" type="text" autocomplete="off" spellcheck="false">
+    <menu>
+      <button type="submit" class="quiet" value="forget">Forget the key</button>
+      <button type="submit" class="quiet" value="cancel">Cancel</button>
+      <button type="submit" value="save">Save</button>
+    </menu>
+  </form>
+</dialog>
+<script type="module" src="./site/main.js"></script>
+</body>
+</html>
