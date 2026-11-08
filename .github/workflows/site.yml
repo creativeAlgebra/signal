@@ -1,0 +1,55 @@
+name: site
+
+# Publishes Signal's own site on GitHub Pages on every push to main (a merged pull request).
+# Nobody runs it by hand; it can be re-run from the Actions tab if a run fails.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      has_site: ${{ steps.check.outputs.has_site }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        name: Is Signal on main yet?
+        run: |
+          if [ -f package.json ]; then echo "has_site=true" >> "$GITHUB_OUTPUT"
+          else echo "has_site=false" >> "$GITHUB_OUTPUT"; echo "No package.json on main yet; the site is published from the first merge that adds Signal."; fi
+      - uses: actions/setup-node@v4
+        if: steps.check.outputs.has_site == 'true'
+        with:
+          node-version: "22"
+          cache: npm
+      - if: steps.check.outputs.has_site == 'true'
+        run: npm ci --no-audit --no-fund
+      - name: Build the site
+        if: steps.check.outputs.has_site == 'true'
+        run: npm run build:site
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.check.outputs.has_site == 'true'
+        with:
+          path: dist-site
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.has_site == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
